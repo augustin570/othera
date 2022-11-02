@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  php:
+    build: docker/php
+    container_name: php_docker_othera
+    restart: always
+    volumes:
+      - ./docker/php/vhosts:/etc/apache2/sites-enabled:ro,cached
+      - ./:/var/www/othera
+    ports:
+      - 8200:80
