@@ -1,3 +1,5 @@
+import { fetchJson } from './misc.js';
+
 // Montreal
 // const lat = 45.508889;
 // const lon = -73.554167;
@@ -5,12 +7,6 @@
 // Repentigny
 const lat = 45.7422200;
 const lon = -73.4500800;
-
-async function fetchJson ( url ) {
-    return fetch( url )
-    .then( ( response ) => response.json() )
-    .then( ( data ) => { return data } );
-}
 
 const flameIcon = new L.Icon({
     iconUrl: 'assets/images/flameIcon.png',
@@ -20,7 +16,7 @@ const flameIcon = new L.Icon({
     shadowSize: [41, 41]
   });
 
-class Map {
+export default class Map {
     constructor ( equipmentWaterPath ) {
         this._equipmentWaterPath = equipmentWaterPath;
 
@@ -111,12 +107,3 @@ class Map {
         if ( text ) marker.bindPopup( text );
     }
 }
-
-
-
-window.onload = function () {
-        const map = new Map(
-        'assets/data/equipement_eau.json'
-    );
-    map.init()
-};

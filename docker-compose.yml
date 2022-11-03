@@ -1,11 +1,63 @@
 version: "3.8"
 services:
+
+  db:
+    image: mysql
+    platform: linux/x86_64
+    container_name: ${DOCKER_CONTAINER_NAME_DB}
+    restart: always
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    networks:
+      - dev
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: ${DOCKER_CONTAINER_NAME_PHPMYADMIN}
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - ${DOCKER_CONTAINER_PORT_PHPMYADMIN}:80
+    environment:
+      PMA_HOST: db
+    networks:
+      - dev
+
   php:
     build: docker/php
-    container_name: php_docker_othera
+    container_name: ${DOCKER_CONTAINER_NAME_PHP}
     restart: always
     volumes:
       - ./docker/php/vhosts:/etc/apache2/sites-enabled:ro,cached
-      - ./:/var/www/othera
+      - ./:/var/www/othera:cached
     ports:
-      - 8200:80
+      - ${DOCKER_CONTAINER_PORT_PHP}:80
+    networks:
+      - dev
+
+  encore:
+    image: node:18-alpine
+    container_name: ${DOCKER_CONTAINER_NAME_ENCORE}
+    restart: always
+    volumes:
+      - ./:/app
+    ports:
+      - ${DOCKER_CONTAINER_PORT_ENCORE}:8080
+    working_dir: /app
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: >
+      /bin/sh -c "yarn install
+      && yarn watch"
+
+networks:
+  dev:
+    name: ${DOCKER_CONTAINER_NETWORK}
+
+volumes:
+  db-data:
+    name: ${DOCKER_CONTAINER_VOLUME}
