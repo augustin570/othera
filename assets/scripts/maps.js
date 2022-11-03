@@ -24,6 +24,9 @@ class Map {
     constructor ( equipmentWaterPath ) {
         this._equipmentWaterPath = equipmentWaterPath;
 
+        this._onPopupOpen = this._onPopupOpen.bind( this );
+        this._onPopupClose = this._onPopupClose.bind( this );
+
         this._map = null;
         this._drinkingFountains = [];
     }
@@ -52,7 +55,7 @@ class Map {
         const today = new Date();
         const todayConverted = ( '0' + ( today.getMonth() + 1 ) ).slice( -2 ) + '-' + ( '0' + today.getDate() ).slice( -2 );
         if ( todayConverted >= '06-01' && todayConverted < '10-15' ) isOpened = true;
-        return ( isOpened ? 'Ouvert' : 'Fermé' ) + '<br>' + data.LOCALISAT
+        return ( isOpened ? 'Ouvert' : 'Fermé' ) + '<button class="test">click me</button><br>' + data.LOCALISAT
     }
 
     _initMap () {
@@ -62,7 +65,33 @@ class Map {
             minZoom: 1,
             maxZoom: 20
         } ).addTo( this._map );
-        this._map.on('click', this._addMarkerFire.bind( this ) );
+        this._map.on( 'click', this._addMarkerFire.bind( this ) );
+        this._map.on( 'popupopen', this._onPopupOpen );
+        this._map.on( 'popupclose', this._onPopupClose );
+
+        // L.routing.control({
+        //     waypoints: [
+        //       L.latLng(57.74, 11.94),
+        //       L.latLng(57.6792, 11.949)
+        //     ]
+        //   }).addTo(this._map);
+    }
+
+    _onPopupOpen ( event ) {
+        document.querySelectorAll( '.test' ).forEach( $popup => {
+            $popup.addEventListener( 'click', this._onClickCursor.bind( this, event.popup ), { once: true } );
+        } );
+    }
+
+    _onPopupClose ( event ) {
+        document.querySelectorAll( '.test' ).forEach( $popup => {
+            $popup.removeEventListener( 'click', this._onClickCursor.bind( this, event.popup ) );
+        } );
+    }
+
+    _onClickCursor ( popup, event ) {
+        event.preventDefault();
+        this._map.closePopup();
     }
 
     _drawDrinkingFountains () {
