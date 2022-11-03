@@ -15,7 +15,6 @@ export default class Address {
 
     _init () {
         this.$i_field = this.$element.querySelector( '.Address--field' );
-        console.log( this.$i_field )
 
         this.$i_field.addEventListener( 'input', debounce( this._onInputField, 300 ) );
     }

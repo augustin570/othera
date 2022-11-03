@@ -11,6 +11,8 @@ class PageController extends AbstractController
     #[Route('/', name: 'page.index')]
     public function index(): Response
     {
-        return $this->render( 'page/index.html.twig' );
+        return $this->render( 'page/index.html.twig', [
+            'geoapify_key' => $this->getParameter( 'geoapify_key' )
+        ] );
     }
 }

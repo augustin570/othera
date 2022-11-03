@@ -1,4 +1,12 @@
 import { fetchJson } from './misc.js';
+import L from "leaflet";
+
+// import { Icon } from 'leaflet';
+// import { LatLng } from 'leaflet';
+// import { Map } from 'leaflet';
+// import { Marker } from 'leaflet';
+// import { TileLayer } from 'leaflet';
+// import { Routing } from 'leaflet-routing-machine';
 
 // Montreal
 // const lat = 45.508889;
@@ -8,17 +16,13 @@ import { fetchJson } from './misc.js';
 const lat = 45.7422200;
 const lon = -73.4500800;
 
-const flameIcon = new L.Icon({
-    iconUrl: 'assets/images/flameIcon.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-  });
+export default class Carte {
+    constructor ( $element ) {
+        if ( ! $element ) return;
+        this.$element = $element;
 
-export default class Map {
-    constructor ( equipmentWaterPath ) {
-        this._equipmentWaterPath = equipmentWaterPath;
+        this._equipmentWaterPath = this.$element.dataset.url;
+        this._flameIconPath = this.$element.dataset.flameIconPath;
 
         this._onPopupOpen = this._onPopupOpen.bind( this );
         this._onPopupClose = this._onPopupClose.bind( this );
@@ -30,8 +34,19 @@ export default class Map {
     async init () {
         this.drinkingFountains = await this._processDrinkingFountains();
 
+        this._initFlameIcon();
         this._initMap();
         this._drawDrinkingFountains();
+    }
+
+    _initFlameIcon () {
+        this._flameIcon = new L.Icon( {
+            iconUrl: this._flameIconPath,
+            iconSize: [ 25, 41 ],
+            iconAnchor: [ 12, 41 ],
+            popupAnchor: [ 1, -34 ],
+            shadowSize: [ 41, 41 ]
+        } );
     }
 
     async _processDrinkingFountains () {
@@ -55,7 +70,7 @@ export default class Map {
     }
 
     _initMap () {
-        this._map = L.map( 'map' ).setView( [ lat, lon ], 11 );
+        this._map = L.map( this.$element ).setView( [ lat, lon ], 11 );
         L.tileLayer( 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
             attribution: 'données © <a href="//osm.org/copyright">OpenStreetMap</a>/ODbL - rendu <a href="//openstreetmap.fr">OSM France</a>',
             minZoom: 1,
@@ -65,7 +80,7 @@ export default class Map {
         this._map.on( 'popupopen', this._onPopupOpen );
         this._map.on( 'popupclose', this._onPopupClose );
 
-        // L.routing.control({
+        // Routing.control({
         //     waypoints: [
         //       L.latLng(57.74, 11.94),
         //       L.latLng(57.6792, 11.949)
@@ -98,7 +113,7 @@ export default class Map {
 
     _addMarkerFire ( e ) {
         if ( ! confirm( 'Voulez-vous ajouter une prévention ici ?' ) ) return false;
-        this._addMarker( e.latlng.lat, e.latlng.lng, { icon: flameIcon }, 'Fait chaud ici' )
+        this._addMarker( e.latlng.lat, e.latlng.lng, { icon: this._flameIcon }, 'Fait chaud ici' )
     }
 
     _addMarker ( latitude, longitude, options = {}, text = null ) {

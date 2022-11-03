@@ -43,6 +43,15 @@ Encore
     .enableSourceMaps(!Encore.isProduction())
     // enables hashed filenames (e.g. app.abc123.css)
     .enableVersioning(Encore.isProduction())
+    .copyFiles({
+        from: './assets/images',
+        to: 'images/[path][name].[ext]'
+    })
+    .copyFiles({
+        from: './assets/data',
+        to: 'data/[path][name].[ext]'
+    })
+
 
     // configure Babel
     // .configureBabel((config) => {
