@@ -12,7 +12,8 @@
 {% block body %}
   <div
     class="Application"
-    data-url="{{ asset('build/data/equipement_eau.json') }}"
+    data-drinking-fountain-repentigny-path="{{ asset('build/data/equipement_eau.json') }}"
+    data-drinking-fountain-montreal-path="{{ asset('build/data/fontaine_eau_potable_v2018.json') }}"
     data-termometer-icon-path="{{ asset('build/images/termometerIcon.png') }}"
     data-drinking-fountain-icon-path="{{ asset('build/images/drinkingFountainIcon.png') }}"
     data-drinking-fountain-popup="{{ include( 'page/_index/_drinking_fountain.html.twig' ) | e }}"

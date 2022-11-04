@@ -23,7 +23,8 @@ export default class Application {
         this.__addresses = [];
         this._markers = {};
 
-        this._equipmentWaterPath = this.$element.dataset.url;
+        this._drinkingFountainRepentignyPath = this.$element.dataset.drinkingFountainRepentignyPath;
+        this._drinkingFountainMontrealPath = this.$element.dataset.drinkingFountainMontrealPath;
         this._termometerIconPath = this.$element.dataset.termometerIconPath;
         this._drinkingFountainIconPath = this.$element.dataset.drinkingFountainIconPath;
         this._drinkingFountainPopup = this.$element.dataset.drinkingFountainPopup;
@@ -43,7 +44,8 @@ export default class Application {
             $toggler.addEventListener( 'click', this._onClickToggler );
         } );
 
-        this.drinkingFountains = await this._processDrinkingFountains();
+        await this._processDrinkingFountainsRepentigny();
+        await this._processDrinkingFountainsMontreal();
 
         this._initTermometerIcon();
         this._initDrinkingFountainIcon();
@@ -88,26 +90,45 @@ export default class Application {
         } );
     }
 
-    async _processDrinkingFountains () {
-        const data = await fetchJson( this._equipmentWaterPath );
+    async _processDrinkingFountainsRepentigny () {
+        const data = await fetchJson( this._drinkingFountainRepentignyPath );
         for ( let line of data ) {
             if ( line.TYPE !== 'Fontaine à boire' ) continue;
             this._drinkingFountains.push( {
                 latitude: line.LATITUDE,
-                text: this._processDrinkingFountainsText( line ),
+                text: this._processDrinkingFountainsRepentignyText( line ),
                 longitude: line.LONGITUDE,
             } );
         }
     }
 
-    _processDrinkingFountainsText ( data ) {
+    async _processDrinkingFountainsMontreal () {
+        const data = await fetchJson( this._drinkingFountainMontrealPath );
+        for ( let line of data ) {
+            this._drinkingFountains.push( {
+                latitude: line.Latitude,
+                text: this._processDrinkingFountainsMontrealText( line ),
+                longitude: line.Longitude,
+            } );
+        }
+    }
+
+    _processDrinkingFountainsRepentignyText ( data ) {
         const isOpened = false;
         const today = new Date();
         const todayConverted = ( '0' + ( today.getMonth() + 1 ) ).slice( -2 ) + '-' + ( '0' + today.getDate() ).slice( -2 );
         if ( todayConverted >= '06-01' && todayConverted < '10-15' ) isOpened = true;
         return this._drinkingFountainPopup
-            .replace( '__state__', isOpened ? 'Ouvert' : 'Fermé' )
+            .replace( '__state__', ( isOpened ? 'Ouvert' : 'Fermé' ) + '<br>' )
             .replace( '__localisation__', data.LOCALISAT )
+        ;
+    }
+
+    _processDrinkingFountainsMontrealText ( data ) {
+        return this._drinkingFountainPopup
+            .replace( '__state__', '' )
+            .replace( '__localisation__', '' )
+        ;
     }
 
     _initMap () {
@@ -168,6 +189,7 @@ export default class Application {
     }
 
     _toggleMarkersByType ( type, status ) {
+        if ( ! ( type in this._markers ) ) return status;
         status = ! status;
         for ( let marker of this._markers[ type ] ) {
             if ( status ) {
