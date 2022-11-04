@@ -41,6 +41,8 @@ export default class Application {
         this._onClickToggler = this._onClickToggler.bind( this );
         this._onClickTrip = this._onClickTrip.bind( this );
         this._onClickReset = this._onClickReset.bind( this );
+        this._onClickHelpOpen = this._onClickHelpOpen.bind( this );
+        this._onClickHelpClose = this._onClickHelpClose.bind( this );
     }
 
     async init () {
@@ -56,6 +58,11 @@ export default class Application {
         this.$b_trip.addEventListener( 'click', this._onClickTrip  );
         this.$b_reset = this.$element.querySelector( '.Application--reset' );
         this.$b_reset.addEventListener( 'click', this._onClickReset );
+        this.$b_helpOpen = this.$element.querySelector( '.Application--help-open' );
+        this.$b_helpOpen.addEventListener( 'click', this._onClickHelpOpen );
+        this.$b_helpClose = this.$element.querySelector( '.Application--help-close' );
+        this.$b_helpClose.addEventListener( 'click', this._onClickHelpClose );
+        this.$d_help = this.$element.querySelector( '.Application--help' );
 
         await this._processDrinkingFountainsRepentigny();
         await this._processDrinkingFountainsMontreal();
@@ -66,6 +73,14 @@ export default class Application {
         this._initMap();
         this._drawDrinkingFountains();
         this._drawThermometers();
+    }
+
+    _onClickHelpOpen ( event ) {
+        this.$d_help.classList.remove( 'hidden' );
+    }
+
+    _onClickHelpClose ( event ) {
+        this.$d_help.classList.add( 'hidden' );
     }
 
     _onClickTrip ( event ) {
