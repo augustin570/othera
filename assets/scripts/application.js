@@ -20,6 +20,7 @@ export default class Application {
 
         this._map = null;
         this._drinkingFountains = [];
+        this._termometers = [];
         this._drinkingFountainsShown = true;
         this._termometersShown = true;
         this.__addresses = [];
@@ -32,6 +33,8 @@ export default class Application {
         this._drinkingFountainIconPath = this.$element.dataset.drinkingFountainIconPath;
         this._drinkingFountainPopup = this.$element.dataset.drinkingFountainPopup;
         this._graphhopperKey = this.$element.dataset.graphhopperKey;
+        this._termometerIndexPath = this.$element.dataset.termometerIndexPath;
+        this._termometerNewPath = this.$element.dataset.termometerNewPath;
 
         this._onPopupOpen = this._onPopupOpen.bind( this );
         this._onPopupClose = this._onPopupClose.bind( this );
@@ -56,11 +59,13 @@ export default class Application {
 
         await this._processDrinkingFountainsRepentigny();
         await this._processDrinkingFountainsMontreal();
+        await this._processTermometer();
 
         this._initTermometerIcon();
         this._initDrinkingFountainIcon();
         this._initMap();
         this._drawDrinkingFountains();
+        this._drawThermometers();
     }
 
     _onClickTrip ( event ) {
@@ -172,6 +177,16 @@ export default class Application {
         }
     }
 
+    async _processTermometer () {
+        const data = await fetchJson( this._termometerIndexPath );
+        for ( let line of data.termometers ) {
+            this._termometers.push( {
+                latitude: line.latitude,
+                longitude: line.longitude,
+            } );
+        }
+    }
+
     _processDrinkingFountainsRepentignyText ( data ) {
         const isOpened = false;
         const today = new Date();
@@ -197,7 +212,7 @@ export default class Application {
             minZoom: 1,
             maxZoom: 20
         } ).addTo( this._map );
-        this._map.on( 'click', this._addMarkerFire.bind( this ) );
+        this._map.on( 'click', this._addMarkerTermometer.bind( this ) );
         this._map.on( 'popupopen', this._onPopupOpen );
         this._map.on( 'popupclose', this._onPopupClose );
     }
@@ -232,9 +247,21 @@ export default class Application {
         }
     }
 
-    _addMarkerFire ( e ) {
+    _drawThermometers () {
+        for ( let termometer of this._termometers ) {
+            this._addMarker( 'termometer', termometer.latitude, termometer.longitude, { icon: this._termometerIcon }, '' );
+        }
+    }
+
+    _addMarkerTermometer ( e ) {
         if ( ! confirm( 'Voulez-vous ajouter une prévention ici ?' ) ) return false;
-        this._addMarker( 'termometer', e.latlng.lat, e.latlng.lng, { icon: this._termometerIcon }, 'Fait chaud ici' )
+        const latitude =  e.latlng.lat;
+        const longitude =  e.latlng.lng;
+        this._addMarker( 'termometer', latitude, longitude, { icon: this._termometerIcon }, 'Fait chaud ici' );
+        const data = new FormData();
+        data.append('termometer[latitude]', latitude);
+        data.append('termometer[longitude]', longitude);
+        fetchJson( this._termometerNewPath, { method: 'post', body: data } );
     }
 
     _addMarker ( type, latitude, longitude, options = {}, text = null ) {

@@ -18,6 +18,8 @@
     data-drinking-fountain-icon-path="{{ asset('build/images/drinkingFountainIcon.png') }}"
     data-drinking-fountain-popup="{{ include( 'page/_index/_drinking_fountain.html.twig' ) | e }}"
     data-graphhopper-key="{{ graphhopper_key }}"
+    data-termometer-index-path="{{ url( 'termometer.index' ) }}"
+    data-termometer-new-path="{{ url( 'termometer.new' ) }}"
   >
     <div class="flex items-center flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 p-2">
       {{ include( 'page/_index/_address.html.twig', {
