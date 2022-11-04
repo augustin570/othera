@@ -4,6 +4,14 @@ export async function fetchJson ( url, options = {} ) {
     .then( ( data ) => { return data } );
 };
 
+export function getParent($element, classSelector) {
+    while ($element !== null && (! $element.classList.contains(classSelector))) {
+        $element = $element.parentNode;
+        if ($element.tagName.toLowerCase() === 'html') return null;
+    }
+    return $element;
+};
+
 export function throttle(func, timeFrame) {
     let lastTime = 0;
     return function (...args) {
