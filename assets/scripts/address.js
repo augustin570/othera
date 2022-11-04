@@ -80,14 +80,16 @@ export default class Address {
 
         this._showList();
         for( let address of addresses ) {
-            this._addAddress( address.address_line2 );
+            this._addAddress( address.address_line1 + ', ' + address.address_line2, address.lat, address.lon );
         }
     }
 
-    _addAddress( text ) {
+    _addAddress( text, latitude, longitude ) {
         const $address = document.createElement( 'li' );
         $address.classList.add( 'Address--element' );
         $address.classList.add( 'cursor-pointer' );
+        $address.dataset.lat = latitude;
+        $address.dataset.lng = longitude;
         $address.addEventListener( 'click', this._onClickAddress );
         const $text = document.createTextNode( text );
         $address.appendChild( $text );
