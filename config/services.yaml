@@ -5,6 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     geoapify_key: '%env(string:GEOAPIFY_KEY)%'
+    graphhopper_key: '%env(string:GRAPHHOPPER_KEY)%'
 
 services:
     # default configuration for services in *this* file

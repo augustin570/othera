@@ -7,6 +7,7 @@ export default class Address {
         this.$element = $element;
 
         this._url = this.$element.dataset.url;
+        this._type = this.$element.dataset.type;
 
         this._onInputField = this._onInputField.bind( this );
         this._onClickDocument = this._onClickDocument.bind( this );
@@ -16,8 +17,27 @@ export default class Address {
         this._init();
     }
 
+    getType () {
+        return this._type;
+    }
+
+    getPosition () {
+        const latitude = parseFloat( this.$i_latitude.value );
+        const longitude = parseFloat( this.$i_longitude.value );
+        if ( isNaN( latitude ) || isNaN( longitude ) ) return null;
+        return [ latitude, longitude ]
+    }
+
+    set ( text, latitude, longitude ) {
+        this.$i_field.value = text;
+        this.$i_latitude.value = latitude;
+        this.$i_longitude.value = longitude;
+    }
+
     _init () {
         this.$i_field = this.$element.querySelector( '.Address--field' );
+        this.$i_latitude = this.$element.querySelector( '.Address--latitude' );
+        this.$i_longitude = this.$element.querySelector( '.Address--longitude' );
         this.$d_container = this.$element.querySelector( '.Address--container' );
         this.$u_list = this.$element.querySelector( '.Address--list' );
         this.$d_noResults = this.$element.querySelector( '.Address--no-results' );
@@ -31,6 +51,7 @@ export default class Address {
         const address = this.$i_field.value.trim();
         this._showContainer();
         if ( address === '' ) {
+            this.set( '', '', '' );
             this._hideAll();
             return false;
         }
@@ -52,6 +73,8 @@ export default class Address {
     _onClickAddress ( event ) {
         const $address = getParent( event.target, 'Address--element' );
         if ( ! $address ) return false;
+        this.$i_latitude.value = $address.dataset.latitude;
+        this.$i_longitude.value = $address.dataset.longitude;
         this.$i_field.value = $address.textContent;
     }
 
@@ -88,8 +111,8 @@ export default class Address {
         const $address = document.createElement( 'li' );
         $address.classList.add( 'Address--element' );
         $address.classList.add( 'cursor-pointer' );
-        $address.dataset.lat = latitude;
-        $address.dataset.lng = longitude;
+        $address.dataset.latitude = latitude;
+        $address.dataset.longitude = longitude;
         $address.addEventListener( 'click', this._onClickAddress );
         const $text = document.createTextNode( text );
         $address.appendChild( $text );

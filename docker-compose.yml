@@ -54,6 +54,18 @@ services:
       /bin/sh -c "yarn install
       && yarn watch"
 
+  # osrm:
+  #   container_name: osrm
+  #   image: osrm/osrm-backend
+  #   restart: always
+  #   ports:
+  #     - "8283:5000"
+  #   volumes:
+  #     - ./osrm:/data
+  #   networks:
+  #     - dev
+  #   command: "osrm-routed --max-matching-size 1000 --max-table-size 1000 --max-viaroute-size 1000 --algorithm mld /data/map.osrm"
+
 networks:
   dev:
     name: ${DOCKER_CONTAINER_NETWORK}

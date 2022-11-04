@@ -2,14 +2,16 @@ import { fetchJson, getParent } from './misc.js';
 
 import Address from './address.js';
 import L from 'leaflet';
+import 'leaflet-routing-machine';
+import 'lrm-graphhopper';
 
 // Montreal
-// const lat = 45.508889;
-// const lon = -73.554167;
+const lat = 45.508889;
+const lon = -73.554167;
 
 // Repentigny
-const lat = 45.7422200;
-const lon = -73.4500800;
+// const lat = 45.7422200;
+// const lon = -73.4500800;
 
 export default class Application {
     constructor ( $element ) {
@@ -22,16 +24,20 @@ export default class Application {
         this._termometersShown = true;
         this.__addresses = [];
         this._markers = {};
+        this._routingControl = null;
 
         this._drinkingFountainRepentignyPath = this.$element.dataset.drinkingFountainRepentignyPath;
         this._drinkingFountainMontrealPath = this.$element.dataset.drinkingFountainMontrealPath;
         this._termometerIconPath = this.$element.dataset.termometerIconPath;
         this._drinkingFountainIconPath = this.$element.dataset.drinkingFountainIconPath;
         this._drinkingFountainPopup = this.$element.dataset.drinkingFountainPopup;
+        this._graphhopperKey = this.$element.dataset.graphhopperKey;
 
         this._onPopupOpen = this._onPopupOpen.bind( this );
         this._onPopupClose = this._onPopupClose.bind( this );
         this._onClickToggler = this._onClickToggler.bind( this );
+        this._onClickTrip = this._onClickTrip.bind( this );
+        this._onClickReset = this._onClickReset.bind( this );
     }
 
     async init () {
@@ -43,6 +49,10 @@ export default class Application {
         this.$b_togglers.forEach( $toggler => {
             $toggler.addEventListener( 'click', this._onClickToggler );
         } );
+        this.$b_trip = this.$element.querySelector( '.Application--trip' );
+        this.$b_trip.addEventListener( 'click', this._onClickTrip  );
+        this.$b_reset = this.$element.querySelector( '.Application--reset' );
+        this.$b_reset.addEventListener( 'click', this._onClickReset );
 
         await this._processDrinkingFountainsRepentigny();
         await this._processDrinkingFountainsMontreal();
@@ -51,6 +61,43 @@ export default class Application {
         this._initDrinkingFountainIcon();
         this._initMap();
         this._drawDrinkingFountains();
+    }
+
+    _onClickTrip ( event ) {
+        this._setTrip();
+    }
+
+    _setTrip () {
+        const departurePosition = this._getAddressPosition( 'departure' );
+        const arrivalPosition = this._getAddressPosition( 'arrival' );
+        this._destroyMarkersByType( 'position' );
+        if ( departurePosition !== null && arrivalPosition !== null ) {
+            this._removeTrip();
+            this._routingControl = L.routing.control( {
+                // serviceUrl: 'http://127.0.0.1:8283/route/v1',
+                waypoints: [
+                    L.latLng( departurePosition[ 0 ], departurePosition[ 1 ] ),
+                    L.latLng( arrivalPosition[ 0 ], arrivalPosition[ 1 ] )
+                ],
+                router: new L.Routing.GraphHopper( this._graphhopperKey , {
+                    urlParameters: {
+                      vehicle: 'foot'
+                    }
+                })
+            } ).addTo( this._map );
+        } else if ( departurePosition !== null ) {
+            this._map.setView( [ departurePosition[ 0 ], departurePosition[ 1 ] ], 15 );
+            this._addMarker( 'position', departurePosition[ 0 ], departurePosition[ 1 ] );
+        } else {
+            alert( 'Vous devez indiquer des positions départ et d\'arrivée valides.');
+        }
+    }
+
+    _onClickReset ( event ) {
+        this._removeTrip();
+        for ( let address of this.__addresses ) {
+            address.set( '', '', '' );
+        }
     }
 
     _onClickToggler ( event ) {
@@ -67,6 +114,18 @@ export default class Application {
                 break;
             default:
                 break;
+        }
+    }
+
+    _removeTrip () {
+        if ( ! this._routingControl ) return;
+        this._map.removeControl( this._routingControl );
+    }
+
+    _getAddressPosition ( type ) {
+        for ( let address of this.__addresses ) {
+            if ( address.getType() !== type ) continue;
+            return address.getPosition();
         }
     }
 
@@ -141,13 +200,6 @@ export default class Application {
         this._map.on( 'click', this._addMarkerFire.bind( this ) );
         this._map.on( 'popupopen', this._onPopupOpen );
         this._map.on( 'popupclose', this._onPopupClose );
-
-        // Routing.control({
-        //     waypoints: [
-        //       L.latLng(57.74, 11.94),
-        //       L.latLng(57.6792, 11.949)
-        //     ]
-        //   }).addTo(this._map);
     }
 
     _onPopupOpen ( event ) {
@@ -164,7 +216,14 @@ export default class Application {
 
     _onClickCursor ( popup, event ) {
         event.preventDefault();
+        const latitude = popup._latlng.lat;
+        const longitude = popup._latlng.lng;
+        for ( let address of this.__addresses ) {
+            if ( address.getType() !== 'arrival' ) continue;
+            address.set( latitude + ', ' + longitude, latitude, longitude );
+        }
         this._map.closePopup();
+        setTimeout( this._setTrip.bind( this ), 100 );
     }
 
     _drawDrinkingFountains () {
@@ -199,5 +258,13 @@ export default class Application {
             }
         }
         return status;
+    }
+
+    _destroyMarkersByType ( type ) {
+        if ( ! ( type in this._markers ) ) return false;
+        for ( let marker of this._markers[ type ] ) {
+            this._map.removeLayer( marker );
+        }
+        delete this._markers[ type ]
     }
 }

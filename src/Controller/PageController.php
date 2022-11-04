@@ -12,7 +12,8 @@ class PageController extends AbstractController
     public function index(): Response
     {
         return $this->render( 'page/index.html.twig', [
-            'geoapify_key' => $this->getParameter( 'geoapify_key' )
+            'geoapify_key' => $this->getParameter( 'geoapify_key' ),
+            'graphhopper_key' => $this->getParameter( 'graphhopper_key' )
         ] );
     }
 }

@@ -1,7 +1,10 @@
 <div
   class="Address relative md:flex-grow w-full md:w-auto"
   data-url="https://api.geoapify.com/v1/geocode/autocomplete?text=__text__&apiKey={{ geoapify_key }}6&format=json&lang=fr"
+  data-type="{{ type }}"
 >
+  <input type="hidden" class="Address--latitude">
+  <input type="hidden" class="Address--longitude">
   <input
     type="text"
     class="Address--field bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
